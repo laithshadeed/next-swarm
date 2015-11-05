@@ -1,6 +1,7 @@
 var _ = require('underscore-node');
 var connect = require('connect')
 var http = require('http');
+var enableDestroy = require('server-destroy');
 var serveIndex = require('serve-index');
 var serveNonCachedStatic = require('serve-static');
 var serveCachedStatic = require('connect-static');
@@ -44,22 +45,69 @@ if(args.cached) {
 	setupServer(serveNonCachedStatic(publicFolder));
 }
 
+function reportTasks(tasks) {
+	console.log(tasks);
+	console.log("");
+}
+
 function setupServer(serveStatic) {
 	// Setup connect
 	var app = connect();
 
 	// @TODO crawl for tests
-	var tasks = ["/awf/test/awf.communication.test.js", "/awf/test/awf.core.test.js"];
+	var SCHEDULED = "Scheduled...";
+	var PICKED_UP = "Picked up.";
+	var RUNNING   = "Running...";
+	var FAILED    = "Failed!";
+	var SUCCESS   = "Success!";
+	var testFiles = ["/awf/test/awf.communication.test.js", "/awf/test/awf.core.test.js"];
+	var tasks = testFiles.map(function(testFile) {
+		return {
+			workerId:  undefined,
+			testFile:  testFile,
+			status:    SCHEDULED,
+			completed: false,
+			report: {
+				fail:  undefined,
+				error: undefined,
+				total: undefined,
+			}
+		};
+	});
+
+	reportTasks(tasks);
+
+	var getHostname = function(request, onResult) {
+		var ip = request.headers['x-forwarded-for'] ||
+				 request.connection.remoteAddress ||
+				 request.socket.remoteAddress ||
+				 request.connection.socket.remoteAddress;
+
+		dns.reverse(ip, function(err, domains) {
+			if(err) {
+				console.log(err.toString());
+			}
+			onResult(_.first(domains));
+		});
+	}
 
 	app.use('/get-task', function(request, response, next) {
 		var testRunnerBaseUri = "/common/test-framework/src/test-runners/test.html?testFiles=";
+		var task = tasks.find((task) => task.status === SCHEDULED);
 
-		if(tasks.length) {
+		if(task) {
+			task.status = PICKED_UP;
+			task.workerId = "Pending...";
+			reportTasks(tasks);
 			response.writeHead(307, {
-				Location: testRunnerBaseUri + tasks[0],
+				Location: testRunnerBaseUri + task.testFile,
 			});
-			tasks = tasks.slice(1);
 			response.write('');
+
+			getHostname(request, function(hostname) {
+				task.workerId = hostname;
+				reportTasks(tasks);
+			});
 		} else {
 			response.writeHead(200, {});
 			response.write('\
@@ -90,12 +138,30 @@ function setupServer(serveStatic) {
 			}
 			onResult(_.first(domains));
 		});
-	}
+	};
 
 	app.use('/report', bodyParser.json());
 	app.use('/report', function(request, response, next) {
 		getHostname(request, function(hostname) {
-			console.log(hostname, "reported: ", request.body);
+			var report = request.body;
+			var task = tasks.find((task) => task.testFile === report.test);
+			task.completed = true;
+			task.status = (report.fail+report.error) === 0 ? SUCCESS : FAILED;
+			task.report = report;
+
+			reportTasks(tasks);
+
+			var allTasksCompleted = tasks.every((task) => task.completed);
+			if(allTasksCompleted) {
+				setTimeout(function() {
+					console.info("Stopping...");
+					server.destroy(function() {
+						console.info("Stopped.");
+						var exitCode = tasks.every((task) => task.status === SUCCESS) ? 0 : 1;
+						process.exit(exitCode);
+					});
+				}, 1000);
+			}
 		});
 
 		response.writeHead(200, {});
@@ -114,6 +180,7 @@ function setupServer(serveStatic) {
 
 	// Listen
 	var server = app.listen(3000);
+	enableDestroy(server);
 
 	console.info("Started listening at port 3000");
 }

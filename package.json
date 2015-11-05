@@ -23,6 +23,7 @@
     "root-require": "^0.3.1",
     "serve-index": "^1.7.2",
     "serve-static": "^1.10.0",
+    "server-destroy": "^1.0.1",
     "underscore-node": "^0.1.2"
   }
 }

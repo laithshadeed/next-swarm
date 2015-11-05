@@ -13,5 +13,12 @@
     "swarm"
   ],
   "author": "Marcel Toele",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "connect": "^3.4.0",
+    "connect-static": "^1.5.1",
+    "finalhandler": "^0.4.0",
+    "serve-index": "^1.7.2",
+    "serve-static": "^1.10.0"
+  }
 }

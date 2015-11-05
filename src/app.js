@@ -45,6 +45,26 @@ function setupServer(serveStatic) {
 	// Setup connect
 	var app = connect();
 
+	// @TODO crawl for tests
+	var tasks = ["/awf/test/awf.communication.test.js", "/awf/test/awf.core.test.js"];
+
+	app.use('/get-task', function(request, response, next) {
+		var testRunnerBaseUri = "/common/test-framework/src/test-runners/test.html?testFiles=";
+
+		if(tasks.length) {
+			response.writeHead(307, {
+				Location: testRunnerBaseUri + tasks[0],
+			});
+			tasks = tasks.slice(1);
+			response.write('');
+		} else {
+			response.writeHead(200, {});
+			response.write('No more tasks.');
+		}
+
+		response.end();
+	});
+
 	app.use(function(req, res, next) {
 		serveStatic(req, res, function onNext(err) {
 			if (err) {

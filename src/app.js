@@ -5,6 +5,7 @@ var serveNonCachedStatic = require('serve-static');
 var serveCachedStatic = require('connect-static');
 var pjson = require('root-require')('./package.json');
 var ArgumentParser = require('argparse').ArgumentParser;
+var bodyParser = require('body-parser');
 
 var parser = new ArgumentParser({
 	version: pjson.version,
@@ -73,6 +74,11 @@ function setupServer(serveStatic) {
 		}
 
 		response.end();
+	});
+
+	app.use('/report', bodyParser.json());
+	app.use('/report', function(request, response, next) {
+		console.log('report request: ', request.body, request.body.fail);
 	});
 
 	app.use(function(req, res, next) {

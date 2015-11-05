@@ -1,3 +1,4 @@
+var _ = require('underscore-node');
 var connect = require('connect')
 var http = require('http');
 var serveIndex = require('serve-index');
@@ -6,6 +7,7 @@ var serveCachedStatic = require('connect-static');
 var pjson = require('root-require')('./package.json');
 var ArgumentParser = require('argparse').ArgumentParser;
 var bodyParser = require('body-parser');
+var dns = require('dns');
 
 var parser = new ArgumentParser({
 	version: pjson.version,
@@ -76,9 +78,29 @@ function setupServer(serveStatic) {
 		response.end();
 	});
 
+	var getHostname = function(request, onResult) {
+		var ip = request.headers['x-forwarded-for'] ||
+				 request.connection.remoteAddress ||
+				 request.socket.remoteAddress ||
+				 request.connection.socket.remoteAddress;
+
+		dns.reverse(ip, function(err, domains) {
+			if(err) {
+				console.log(err.toString());
+			}
+			onResult(_.first(domains));
+		});
+	}
+
 	app.use('/report', bodyParser.json());
 	app.use('/report', function(request, response, next) {
-		console.log('report request: ', request.body, request.body.fail);
+		getHostname(request, function(hostname) {
+			console.log(hostname, "reported: ", request.body);
+		});
+
+		response.writeHead(200, {});
+		response.write('Thank you.');
+		response.end();
 	});
 
 	app.use(function(req, res, next) {

@@ -19,8 +19,10 @@
     "body-parser": "^1.14.1",
     "connect": "^3.4.0",
     "connect-static": "^1.5.1",
+    "dns": "^0.2.2",
     "root-require": "^0.3.1",
     "serve-index": "^1.7.2",
-    "serve-static": "^1.10.0"
+    "serve-static": "^1.10.0",
+    "underscore-node": "^0.1.2"
   }
 }

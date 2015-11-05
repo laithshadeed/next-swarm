@@ -59,7 +59,17 @@ function setupServer(serveStatic) {
 			response.write('');
 		} else {
 			response.writeHead(200, {});
-			response.write('No more tasks.');
+			response.write('\
+				<html>\n\
+					<head>\n\
+						<title>nextSWARM</title>\n\
+						<meta http-equiv="refresh" content="5" />\n\
+					</head>\n\
+					<body style="font-family: sans">\n\
+						No more tasks.\n\
+					</body>\n\
+				</html>'
+			);
 		}
 
 		response.end();

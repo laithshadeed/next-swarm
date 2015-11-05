@@ -1,4 +1,4 @@
-var finalhandler = require('finalhandler');
+var connect = require('connect')
 var http = require('http');
 var serveIndex = require('serve-index');
 var serveNonCachedStatic = require('serve-static');
@@ -29,32 +29,33 @@ var index = serveIndex(publicFolder, {'icons': true});
 
 // Serve up public folder files
 if(args.cached) {
-	console.info("Serving non-cached resources from "+publicFolder);
-	serve(serveNonCachedStatic(publicFolder));
-} else {
 	console.info("Serving cached resources from "+publicFolder);
 	serveCachedStatic({}, function (err, middleware) {
 		if (err) {
 			throw err;
 		}
-		serve(middleware)
+		setupServer(middleware)
 	});
+} else {
+	console.info("Serving non-cached resources from "+publicFolder);
+	setupServer(serveNonCachedStatic(publicFolder));
 }
 
-function serve(serve) {
-	// Create server
-	var server = http.createServer(function onRequest(req, res) {
-		var done = finalhandler(req, res);
-		serve(req, res, function onNext(err) {
+function setupServer(serveStatic) {
+	// Setup connect
+	var app = connect();
+
+	app.use(function(req, res, next) {
+		serveStatic(req, res, function onNext(err) {
 			if (err) {
-				return done(err);
+				return next(err);
 			}
-			index(req, res, done);
-		})
-	})
+			index(req, res, next);
+		});
+	});
 
 	// Listen
-	server.listen(3000);
+	var server = app.listen(3000);
 
 	console.info("Started listening at port 3000");
 }

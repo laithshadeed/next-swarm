@@ -1,0 +1,17 @@
+{
+  "name": "next-swarm",
+  "version": "0.7.0",
+  "description": "A unit test runner inspired by 'test swarm'",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "unit",
+    "test",
+    "testswarm",
+    "swarm"
+  ],
+  "author": "Marcel Toele",
+  "license": "ISC"
+}

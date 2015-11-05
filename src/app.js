@@ -1,20 +1,47 @@
 var finalhandler = require('finalhandler');
 var http = require('http');
 var serveIndex = require('serve-index');
-var serveStatic = require('serve-static');
+var serveNonCachedStatic = require('serve-static');
 var serveCachedStatic = require('connect-static');
+var pjson = require('root-require')('./package.json');
+var ArgumentParser = require('argparse').ArgumentParser;
 
-// Serve directory indexes for public/ftp folder (with icons)
-var index = serveIndex('public', {'icons': true});
+var parser = new ArgumentParser({
+	version: pjson.version,
+	addHelp: true,
+	description: pjson.description
+});
 
-// Serve up public/ftp folder files
-//var serve = serveStatic('public');
-
-serveCachedStatic({}, function (err, serve) {
-	if (err) {
-		throw err;
+parser.addArgument(
+	['-c', '--cached'],
+	{
+		action: 'storeTrue',
+		help: 'Serve files from in-memory cache.'
 	}
+);
 
+var args = parser.parseArgs();
+
+var publicFolder = 'public';
+
+// Serve directory indexes for public folder (with icons)
+var index = serveIndex(publicFolder, {'icons': true});
+
+// Serve up public folder files
+if(args.cached) {
+	console.info("Serving non-cached resources from "+publicFolder);
+	serve(serveNonCachedStatic(publicFolder));
+} else {
+	console.info("Serving cached resources from "+publicFolder);
+	serveCachedStatic({}, function (err, middleware) {
+		if (err) {
+			throw err;
+		}
+		serve(middleware)
+	});
+}
+
+function serve(serve) {
 	// Create server
 	var server = http.createServer(function onRequest(req, res) {
 		var done = finalhandler(req, res);
@@ -28,4 +55,6 @@ serveCachedStatic({}, function (err, serve) {
 
 	// Listen
 	server.listen(3000);
-});
+
+	console.info("Started listening at port 3000");
+}

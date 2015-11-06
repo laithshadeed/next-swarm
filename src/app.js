@@ -140,8 +140,8 @@ function setupServer(serveStatic) {
 		});
 	};
 
-	app.use('/report', bodyParser.json());
-	app.use('/report', function(request, response, next) {
+	app.use('/submit-report', bodyParser.json());
+	app.use('/submit-report', function(request, response, next) {
 		getHostname(request, function(hostname) {
 			var report = request.body;
 			var task = tasks.find((task) => task.testFile === report.test);

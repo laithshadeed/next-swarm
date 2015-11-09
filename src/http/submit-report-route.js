@@ -16,7 +16,7 @@ bus.on("registerConnectModules", function(connectApp) {
 	connectApp.use('/submit-report', function(request, response, next) {
 		getHostname(request, function(hostname) {
 			var report = request.body;
-			var task = tasks.find((task) => task.testFile === report.test);
+			var task = tasks.find((task) => task.name === report.name);
 			task.completed = true;
 			task.status = (report.fail+report.error) === 0 ? SUCCESS : FAILED;
 			task.report = report;

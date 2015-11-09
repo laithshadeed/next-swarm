@@ -2,6 +2,25 @@ var requireL = require("root-require")("./src/require-local.js");
 var getHostname = requireL("http/http-util").getHostname;
 var bus = require("hermes-bus");
 
+bus.on("registerCommandlineArguments", function (parser) {
+	parser.addArgument(
+		['--test-runner'],
+		{
+			dest: 'testRunner',
+			metavar: 'PATH',
+			required: true,
+			help: 'Specify the test runner path. This is the base uri path \
+					at which the test runner is served. The test runner is \
+					expected to handle two uri parameters: name and testFiles.'
+		}
+	);
+});
+
+var testRunnerBaseUri = "";
+bus.on("commandlineArgumentsParsed", function (args) {
+	testRunnerBaseUri = args.testRunner || "";
+});
+
 with(requireL("tasks").statusTypes) {
 
 var tasks = [];
@@ -12,7 +31,6 @@ bus.on("scheduleTasks", function(tasks2) {
 
 bus.on("registerConnectModules", function(connectApp) {
 	connectApp.use('/get-task', function(request, response, next) {
-		var testRunnerBaseUri = "/common/test-framework/src/test-runners/test.html?testFiles=";
 		var task = tasks.find((task) => task.status === SCHEDULED);
 
 		if(task) {
@@ -23,7 +41,7 @@ bus.on("registerConnectModules", function(connectApp) {
 			bus.triggerReportTasks(tasks);
 
 			response.writeHead(307, {
-				Location: testRunnerBaseUri + task.testFile,
+				Location: testRunnerBaseUri + "?name="+task.name+"&testFiles="+task.testFiles,
 			});
 			response.write('');
 

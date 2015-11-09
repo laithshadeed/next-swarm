@@ -1,7 +1,6 @@
 
 var bus = require("hermes-bus");
 
-// @TODO crawl for tests
 var statusTypes = {
 	SCHEDULED: "Scheduled...",
 	PICKED_UP: "Picked up.",
@@ -9,19 +8,37 @@ var statusTypes = {
 	FAILED   : "Failed!",
 	SUCCESS  : "Success!",
 };
-var testFiles = ["/awf/test/awf.communication.test.js", "/awf/test/awf.core.test.js"];
-var tasks = testFiles.map(function(testFile) {
-	return {
-		workerId:  undefined,
-		testFile:  testFile,
-		status:    statusTypes.SCHEDULED,
-		completed: false,
-		report: {
-			fail:  undefined,
-			error: undefined,
-			total: undefined,
+
+bus.on("registerCommandlineArguments", function (parser) {
+	parser.addArgument(
+		['-t', '--task'],
+		{
+			action: 'append',
+			dest: 'tasks',
+			metavar: 'TASK',
+			help: 'Specify a task to run. A task is specified as \
+					TASKNAME=TESTFILE1,TESTFILE2,...,TESTFILEN. \
+					This argument should be repeated for each task.'
 		}
-	};
+	);
+});
+
+bus.on("commandlineArgumentsParsed", function (args) {
+	tasks = (args.tasks || []).map(function(taskSpec) {
+		var keyValueTuple = taskSpec.split(/=/);
+		return {
+			name: keyValueTuple[0],
+			testFiles:  keyValueTuple[1],
+			workerId:  undefined,
+			status:    statusTypes.SCHEDULED,
+			completed: false,
+			report: {
+				fail:  undefined,
+				error: undefined,
+				total: undefined,
+			}
+		}
+	});
 });
 
 bus.on("applicationStarted", function() {

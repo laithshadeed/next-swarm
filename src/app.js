@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var requireL = require(__dirname+"/require-local.js");
 
 var bus = require("hermes-bus");

@@ -21,9 +21,6 @@ bus.on("registerConnectModules", function(connectApp) {
 			task.status = (report.fail+report.error) === 0 ? SUCCESS : FAILED;
 			task.report = report;
 
-			// @TODO put in separate module
-			bus.triggerReportTasks(tasks);
-
 			var allTasksCompleted = tasks.every((task) => task.completed);
 			if(allTasksCompleted) {
 				bus.triggerRequestStopConnectServer();

@@ -37,20 +37,12 @@ bus.on("registerConnectModules", function(connectApp) {
 			task.status = PICKED_UP;
 			task.workerId = "Pending...";
 
-			// @TODO put in separate module
-			bus.triggerReportTasks(tasks);
-
 			response.writeHead(307, {
 				Location: testRunnerBaseUri + "?name="+task.name+"&testFiles="+task.testFiles,
 			});
 			response.write('');
 
-			getHostname(request, function(hostname) {
-				task.workerId = hostname;
-
-				// @TODO put in separate module
-				bus.triggerReportTasks(tasks);
-			});
+			getHostname(request, (hostname) => {task.workerId = hostname});
 		} else {
 			response.writeHead(200, {});
 			response.write('\

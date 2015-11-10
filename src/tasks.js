@@ -1,3 +1,4 @@
+var _ = require('underscore-node');
 
 var bus = require("hermes-bus");
 
@@ -23,13 +24,23 @@ bus.on("registerCommandlineArguments", function (parser) {
 	);
 });
 
+// workaround for the missing '.publish' on hermes-bus:
+bus.on("taskUpdated", function(){});
+bus.on("tasksUpdated", function(){});
+
+var triggerTasksUpdated = _.throttle((tasks) => bus.triggerTasksUpdated(tasks), 100);
+var triggerTaskUpdated = _.throttle(function(task) {
+	bus.triggerTaskUpdated(task);
+	triggerTasksUpdated(tasks);
+}, 100);
+
 bus.on("commandlineArgumentsParsed", function (args) {
-	tasks = (args.tasks || []).map(function(taskSpec) {
+	var taskObjects = (args.tasks || []).map(function(taskSpec) {
 		var keyValueTuple = taskSpec.split(/=/);
 		return {
 			name: keyValueTuple[0],
 			testFiles:  keyValueTuple[1],
-			workerId:  undefined,
+			workerId:  "<unknown>",
 			status:    statusTypes.SCHEDULED,
 			completed: false,
 			report: {
@@ -37,8 +48,29 @@ bus.on("commandlineArgumentsParsed", function (args) {
 				error: undefined,
 				total: undefined,
 			}
-		}
+		};
 	});
+
+	tasks = taskObjects.map(function(task) {
+		var accessor = {};
+		Object.keys(task).forEach(function(key) {
+			Object.defineProperty(accessor,	key, {
+				get: function() {
+					return task[key];
+				},
+				set: function(value) {
+					task[key] = value;
+					triggerTaskUpdated(task);
+				},
+			});
+		});
+
+		return accessor;
+	});
+
+	tasks.toString = function() {
+		return JSON.stringify(taskObjects, undefined, "  ");
+	};
 });
 
 bus.on("applicationStarted", function() {

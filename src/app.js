@@ -8,6 +8,7 @@ requireL(
 	"commandline-arguments",
 	"tasks",
 	"tasks-status-stdout",
+	"manage-slaves",
 	"http/http"
 );
 

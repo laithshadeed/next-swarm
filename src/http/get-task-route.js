@@ -1,5 +1,6 @@
 var requireL = require("root-require")("./src/require-local.js");
-var getHostname = requireL("http/http-util").getHostname;
+var query = require("connect-query");
+
 var bus = require("hermes-bus");
 
 bus.on("registerCommandlineArguments", function (parser) {
@@ -30,19 +31,18 @@ bus.on("scheduleTasks", function(tasks2) {
 });
 
 bus.on("registerConnectModules", function(connectApp) {
+	connectApp.use('/get-task', query());
 	connectApp.use('/get-task', function(request, response, next) {
 		var task = tasks.find((task) => task.status === SCHEDULED);
 
 		if(task) {
 			task.status = PICKED_UP;
-			task.workerId = "Pending...";
+			task.workerId = request.query.containerId;
 
 			response.writeHead(307, {
 				Location: testRunnerBaseUri + "?name="+task.name+"&testFiles="+task.testFiles,
 			});
 			response.write('');
-
-			getHostname(request, (hostname) => {task.workerId = hostname});
 		} else {
 			response.writeHead(200, {});
 			response.write('\

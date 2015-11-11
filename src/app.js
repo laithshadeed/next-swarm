@@ -11,10 +11,10 @@ requireL(
 	"http/http"
 );
 
-bus.triggerApplicationStarting();
-bus.triggerApplicationStarted();
-
 bus.on("requestStopApplication", function(exitCodeReference) {
 	var exitCode = exitCodeReference.value || 0;
 	process.exit(exitCode);
 });
+
+bus.triggerApplicationStarting();
+bus.triggerApplicationStarted();

@@ -37,10 +37,10 @@ bus.on("registerConnectModules", function(connectApp) {
 
 		if(task) {
 			task.status = PICKED_UP;
-			task.workerId = request.query.containerId;
+			task.workerId = request.query.workerId;
 
 			response.writeHead(307, {
-				Location: testRunnerBaseUri + "?name="+task.name+"&testFiles="+task.testFiles,
+				Location: testRunnerBaseUri + "?name="+task.name+"&workerId="+task.workerId+"&testFiles="+task.testFiles,
 			});
 			response.write('');
 		} else {

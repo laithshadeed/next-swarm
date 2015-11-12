@@ -12,6 +12,7 @@ var bus = require("hermes-bus");
 requireL(
 	"http/get-task-route",
 	"http/submit-report-route",
+	"http/heartbeat-route",
 	"http/static-files-route"
 );
 

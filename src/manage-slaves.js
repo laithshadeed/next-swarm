@@ -1,12 +1,12 @@
 var requireL = require("root-require")("./src/require-local.js");
-
 var _ = require('underscore-node');
+var serverIpAddress = "";
+
 // @TODO move to monkeypatch-array module
 Array.prototype.flatten = function() {return _.flatten(this)};
 
 var os = require('os');
 var exec = require('child_process').exec;
-
 var bus = require("hermes-bus");
 
 var numSlaves = 1;
@@ -36,7 +36,7 @@ bus.on("scheduleTasks", function(tasks2) {
 // maximum time since last heartbeat before we consider the slave lost
 var SLAVE_MAX_TIMEOUT=30*1000;
 // interval at which we check if a slave was lost
-var SLAVE_SANITY_CHECK_INTERVAL=1000
+var SLAVE_SANITY_CHECK_INTERVAL= 1000;
 // slave looks like: {workerId: "docker container id", timeOfLastHeartBeat: 1447284644252, taskName: "name of task it was running"}
 var monitoredSlaves = [];
 /*
@@ -51,25 +51,19 @@ var monitorSlaves = function() {
 		// console.log("Checking slaves:", monitoredSlaves);
 		var now = Date.now();
 		monitoredSlaves.forEach(function(slave) {
+
 			if((now - slave.timeOfLastHeartBeat) > SLAVE_MAX_TIMEOUT) {
 				console.log("slave " + slave.workerId + " seems lost, restarting");
-				removeSlave(slave.workerId);
-				// @TODO restart slave
+				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);
 				if(task) {
 					task.status = SCHEDULED;
+					task.workerId = "<unknown>";
 				}
 			}
 		});
-	}, 1000);
+	}, SLAVE_SANITY_CHECK_INTERVAL);
 }
-
-var removeSlave = function(workerId) {
-	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
-	if(monitoredSlave) {
-		monitoredSlaves = _.without(monitoredSlaves, monitoredSlave);
-	}
-};
 
 bus.on("taskUpdated", function(task) {
 	if(task.workerId !== "<unknown>") {
@@ -85,24 +79,58 @@ bus.on("taskUpdated", function(task) {
 	}
 });
 
-bus.on("heartbeatReceived", function(workerId) {
-	// console.log("heartbeatReceived", workerId);
-	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
-	if(monitoredSlave) {
-		monitoredSlave.timeOfLastHeartBeat = Date.now();
-	}
-});
 
-function startSlaves(serverAddress) {
-	_.range(numSlaves).forEach(function() {
-		var command = "docker run next-swarm-slave "+serverAddress;
-		console.log(command);
-		exec(command);
-	});
-
+var onFirstSlaveConnection = _.once(function(){
 	if(numSlaves) {
 		monitorSlaves();
 	}
+});
+
+bus.on("heartbeatReceived", function(workerId) {
+	onFirstSlaveConnection();
+
+	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
+	if(monitoredSlave) {
+		monitoredSlaves = _.without(monitoredSlaves, monitoredSlave);
+	}
+});
+
+function restartSlave(workerId) {
+	console.log("Restarting slave ", workerId);
+
+	removeSlave(workerId);
+	var command = "docker stop --time=3 " + workerId;
+	exec(command, function (error) {
+		if (error) {
+			console.log("FAILED to kill container ", workerId, error);
+		}
+	});
+	//For some reason this fails to start the docker container ????
+	startSlave(serverIpAddress);
+}
+
+ function removeSlave(workerId) {
+	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
+	if(monitoredSlave) {
+		monitoredSlaves = _.without(monitoredSlaves, monitoredSlave);
+	}
+};
+
+function startSlaves(serverAddress) {
+	serverIpAddress = serverAddress;
+	_.range(numSlaves).forEach(function() {
+		startSlave(serverAddress);
+	});
+}
+
+function startSlave(serverAddress){
+	console.log("Booting-up a docker container...");
+	var command = "docker run next-swarm-slave " + serverAddress + " --rm=true";
+	exec(command, function(error){
+		if(error){
+			return console.log("Failed to boot-up a slave", error);
+		}
+	});
 }
 
 } // with tasks.statusTypes

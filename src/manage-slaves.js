@@ -63,6 +63,7 @@ var monitorSlaves = function() {
 					task.numOfRecoveryRuns -= 1;
 				} else if(task){
 					task.status = FAILED;
+					task.completed = true;
 					console.log("Task: "+ task.name +" reached max numOfRecoveryRuns!");
 				}
 			}

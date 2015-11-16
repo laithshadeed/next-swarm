@@ -39,6 +39,13 @@ bus.on("applicationStarted", function setupServer() {
 	console.info("Started listening at port 3000");
 });
 
+bus.on("tasksUpdated", function(task) {
+	var allTasksCompleted = tasks.every((task) => task.completed);
+	if(allTasksCompleted) {
+		bus.triggerRequestStopConnectServer();
+	}
+});
+
 bus.on("requestStopConnectServer", function() {
 	setTimeout(function() {
 		console.info("Stopping...");

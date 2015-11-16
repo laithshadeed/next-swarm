@@ -19,11 +19,6 @@ bus.on("registerConnectModules", function(connectApp) {
 		task.status = (report.fail+report.error) === 0 ? SUCCESS : FAILED;
 		task.report = report;
 
-		var allTasksCompleted = tasks.every((task) => task.completed);
-		if(allTasksCompleted) {
-			bus.triggerRequestStopConnectServer();
-		}
-
 		response.writeHead(200, {});
 		response.write('Thank you.');
 		response.end();

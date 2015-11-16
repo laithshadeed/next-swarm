@@ -57,13 +57,13 @@ var monitorSlaves = function() {
 				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);
 
-				if(task && task.maxNumOfFailures > 0 ){
+				if(task && task.numOfRecoveryRuns > 0 ){
 					task.status = SCHEDULED;
 					task.workerId = "<unknown>";
-					task.maxNumOfFailures -= 1;
+					task.numOfRecoveryRuns -= 1;
 				} else if(task){
-					console.log("Task: "+ task.name +" reached max number of failures!");
-					bus.triggerRequestStopConnectServer();
+					task.status = FAILED;
+					console.log("Task: "+ task.name +" reached max numOfRecoveryRuns!");
 				}
 			}
 		});

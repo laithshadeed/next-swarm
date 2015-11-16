@@ -46,9 +46,11 @@ var monitoredSlaves = [];
  * 1) restart the slave
  * 2) reschedule the job that the slave was supposed to run
  */
-var monitorSlaves = function() {
+var isMonitoringSlaves = false;
+var startMonitoringSlaves = function() {
+	isMonitoringSlaves = true;
 	setInterval(function() {
-		// console.log("Checking slaves:", monitoredSlaves);
+//		console.log("Checking slaves:", monitoredSlaves);
 		var now = Date.now();
 		monitoredSlaves.forEach(function(slave) {
 
@@ -69,7 +71,7 @@ var monitorSlaves = function() {
 			}
 		});
 	}, SLAVE_SANITY_CHECK_INTERVAL);
-}
+};
 
 bus.on("taskUpdated", function(task) {
 	if(task.workerId !== "<unknown>") {
@@ -81,19 +83,16 @@ bus.on("taskUpdated", function(task) {
 				timeOfLastHeartBeat: Date.now(),
 				taskName: task.name,
 			});
+
+			if(!isMonitoringSlaves) {
+				startMonitoringSlaves();
+			}
 		}
 	}
 });
 
-
-var onFirstSlaveConnection = _.once(function(){
-	if(numSlaves) {
-		monitorSlaves();
-	}
-});
-
 bus.on("heartbeatReceived", function(workerId) {
-	onFirstSlaveConnection();
+//	console.log("heartbeatReceived", workerId);
 
 	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
 	if(monitoredSlave) {

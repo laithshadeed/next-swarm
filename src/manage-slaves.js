@@ -59,10 +59,10 @@ var startMonitoringSlaves = function() {
 				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);
 
-				if(task && task.numOfRecoveryRuns > 0 ){
+				if(task && task.numRecoveryRunsLeft > 0){
 					task.status = SCHEDULED;
 					task.workerId = "<unknown>";
-					task.numOfRecoveryRuns -= 1;
+					task.numRecoveryRunsLeft -= 1;
 				} else if(task){
 					task.status = FAILED;
 					task.completed = true;
@@ -78,6 +78,10 @@ bus.on("taskUpdated", function(task) {
 		if(task.completed) {
 			removeSlave(task.workerId);
 		} else if(task.status === PICKED_UP) {
+			if(task.numRecoveryRunsLeft == undefined) {
+				task.defineProperty("numRecoveryRunsLeft", 3);
+			}
+
 			monitoredSlaves.push({
 				workerId: task.workerId,
 				timeOfLastHeartBeat: Date.now(),

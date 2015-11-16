@@ -43,7 +43,6 @@ bus.on("commandlineArgumentsParsed", function (args) {
 			workerId:  "<unknown>",
 			status:    statusTypes.SCHEDULED,
 			completed: false,
-			numOfRecoveryRuns: 3,
 			report: {
 				fail:  undefined,
 				error: undefined,
@@ -53,18 +52,24 @@ bus.on("commandlineArgumentsParsed", function (args) {
 	});
 
 	tasks = taskObjects.map(function(task) {
-		var accessor = {};
-		Object.keys(task).forEach(function(key) {
-			Object.defineProperty(accessor,	key, {
-				get: function() {
-					return task[key];
-				},
-				set: function(value) {
-					task[key] = value;
-					triggerTaskUpdated(task);
-				},
-			});
-		});
+		var accessor = {
+			defineProperty: function(propertyName, defaultValue) {
+				Object.defineProperty(accessor,	propertyName, {
+					get: function() {
+						return task[propertyName];
+					},
+					set: function(value) {
+						task[propertyName] = value;
+						triggerTaskUpdated(accessor);
+					},
+				});
+
+				if(defaultValue != undefined) {
+					this[propertyName] = defaultValue;
+				}
+			}
+		};
+		Object.keys(task).forEach((key) => accessor.defineProperty(key));
 
 		return accessor;
 	});

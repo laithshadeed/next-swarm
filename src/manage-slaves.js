@@ -125,7 +125,7 @@ function startSlaves(serverAddress) {
 
 function startSlave(serverAddress){
 	console.log("Booting-up a docker container...");
-	var command = "docker run next-swarm-slave " + serverAddress + " --rm=true";
+	var command = "docker run next-swarm-slave " + serverAddress;
 	exec(command, function(error){
 		if(error){
 			return console.log("Failed to boot-up a slave", error);

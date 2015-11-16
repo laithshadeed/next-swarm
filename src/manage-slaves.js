@@ -56,9 +56,14 @@ var monitorSlaves = function() {
 				console.log("slave " + slave.workerId + " seems lost, restarting");
 				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);
-				if(task) {
+
+				if(task && task.maxNumOfFailures > 0 ){
 					task.status = SCHEDULED;
 					task.workerId = "<unknown>";
+					task.maxNumOfFailures -= 1;
+				} else if(task){
+					console.log("Task: "+ task.name +" reached max number of failures!");
+					bus.triggerRequestStopConnectServer();
 				}
 			}
 		});

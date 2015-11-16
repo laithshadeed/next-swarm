@@ -43,6 +43,7 @@ bus.on("commandlineArgumentsParsed", function (args) {
 			workerId:  "<unknown>",
 			status:    statusTypes.SCHEDULED,
 			completed: false,
+			maxNumOfFailures: 3,
 			report: {
 				fail:  undefined,
 				error: undefined,

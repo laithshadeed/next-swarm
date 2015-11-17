@@ -132,11 +132,12 @@ function startSlaves(serverAddress) {
 	});
 }
 
+var SIGTERM = 137;
 function startSlave(serverAddress){
 	console.log("Booting-up a docker container...");
 	var command = "docker run next-swarm-slave " + serverAddress;
 	exec(command, function(error){
-		if(error){
+		if(error && error.code !== SIGTERM){
 			return console.log("Failed to boot-up a slave", error);
 		}
 	});

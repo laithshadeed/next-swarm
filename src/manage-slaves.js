@@ -61,14 +61,16 @@ var startMonitoringSlaves = function() {
 				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);
 
-				if(task && task.numRecoveryRunsLeft > 0){
-					task.status = SCHEDULED;
-					task.workerId = "<unknown>";
-					task.numRecoveryRunsLeft -= 1;
-				} else if(task){
-					task.status = FAILED;
-					task.completed = true;
-					console_log("Task: "+ task.name +" reached max numOfRecoveryRuns!");
+				if(task && !task.completed) {
+					if(task.numRecoveryRunsLeft > 0){
+						task.status = SCHEDULED;
+						task.workerId = "<unknown>";
+						task.numRecoveryRunsLeft -= 1;
+					} else {
+						task.status = FAILED;
+						task.completed = true;
+						console_log("Task: "+ task.name +" reached max numOfRecoveryRuns!");
+					}
 				}
 			}
 		});

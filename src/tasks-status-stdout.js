@@ -2,6 +2,10 @@ var sprintf=require("sprintf-js").sprintf;
 var _ = require("underscore-node");
 var bus = require("hermes-bus");
 
+function orElse(a, b) {
+	return a != undefined ? a : b;
+}
+
 function reportTasks(tasks) {
 	console.log('\033[2J'); // clear console (ANSI terminal/VT100)
 	console.log("Tasks:");
@@ -12,7 +16,7 @@ function reportTasks(tasks) {
 			status:		task.status,
 			completed:	task.completed ? "Completed" : "",
 			workerId:	task.workerId,
-			numRecoveryRunsLeft: 3-(task.numRecoveryRunsLeft || 3),
+			numRecoveryRunsLeft: 3-orElse(task.numRecoveryRunsLeft, 3),
 			report:		JSON.stringify(_.pick(task.report, "fail", "error", "total")),
 		};
 		taskCopy.name = task.name.substr(-30);

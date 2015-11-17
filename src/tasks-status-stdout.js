@@ -10,6 +10,7 @@ function orElse(a, b) {
 }
 
 function reportTasks(tasks) {
+	console.log('\033[H'); // move home (ANSI terminal/VT100)
 	console.log("Tasks:");
 	console.log("           Test Name              |    Status    |   Worker Id    | Completed? |Retry| Report");
 	console.log(tasks.map(function(task) {
@@ -31,6 +32,10 @@ bus.on("tasksUpdated", reportTasks);
 
 bus.on("scheduleTasks", function(tasks) {
 	reportTasks(tasks);
+});
+
+bus.on("applicationStarting", function() {
+	console.log("\033c"); // clear console (ANSI terminal/VT100)
 });
 
 bus.on("requestStopApplication", function() {

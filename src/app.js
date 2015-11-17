@@ -8,6 +8,7 @@ var bus = require("hermes-bus");
 requireL(
 	"logging",
 	"logging-vt100",
+	"logging-websockets",
 	"commandline-arguments",
 	"tasks",
 	"tasks-status-reporting",

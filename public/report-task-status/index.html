@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head></head>
+	<body>
+		Open the console
+		<script>
+			ws = new WebSocket('ws://'+location.hostname+':3001');
+			ws.onopen = function() {
+				ws.send('something sent by client');
+			};
+			ws.onmessage = function(event) {
+				var message = event.data;
+				console.log('received: %s', message);
+			};
+		</script>
+	</body>
+</html>

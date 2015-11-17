@@ -2,12 +2,14 @@ var sprintf=require("sprintf-js").sprintf;
 var _ = require("underscore-node");
 var bus = require("hermes-bus");
 
+var requireL = require("root-require")("./src/require-local.js");
+with(requireL("tasks").statusTypes) {
+
 function orElse(a, b) {
 	return a != undefined ? a : b;
 }
 
 function reportTasks(tasks) {
-	console.log('\033[2J'); // clear console (ANSI terminal/VT100)
 	console.log("Tasks:");
 	console.log("           Test Name              |    Status    |   Worker Id    | Completed? |Retry| Report");
 	console.log(tasks.map(function(task) {
@@ -30,3 +32,12 @@ bus.on("tasksUpdated", reportTasks);
 bus.on("scheduleTasks", function(tasks) {
 	reportTasks(tasks);
 });
+
+bus.on("requestStopApplication", function() {
+	var failedTaskNames = tasks.filter((task) => task.status === FAILED).map((task) => task.name);
+
+	console.log("The following tasks completed with one or more failed tests:\n\n" + failedTaskNames.map((name) => "  "+name));
+	console.log("");
+});
+
+} // with tasks.statusTypes

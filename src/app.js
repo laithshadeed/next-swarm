@@ -10,7 +10,7 @@ requireL(
 	"logging-vt100",
 	"commandline-arguments",
 	"tasks",
-	"tasks-status-stdout",
+	"tasks-status-reporting",
 	"manage-slaves",
 	"http/http"
 );

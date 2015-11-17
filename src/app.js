@@ -14,6 +14,7 @@ requireL(
 
 bus.on("requestStopApplication", function(exitCodeReference) {
 	var exitCode = exitCodeReference.value || 0;
+	console.info("Stopped.");
 	process.exit(exitCode);
 });
 

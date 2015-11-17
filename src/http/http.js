@@ -48,11 +48,10 @@ bus.on("tasksUpdated", function(task) {
 
 bus.on("requestStopConnectServer", function() {
 	setTimeout(function() {
-		console.info("Stopping...");
 		server.destroy(function() {
-			console.info("Stopped.");
 			// We don't know an exit code, but rely on the fact
 			// that somebody does:)
+			console.info("Stopping...");
 			bus.triggerRequestStopApplication({value: undefined});
 		});
 	}, 1000);

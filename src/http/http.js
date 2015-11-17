@@ -1,6 +1,7 @@
 var _ = require('underscore-node');
 
-var requireL = require(__dirname+"/../require-local.js");
+var requireL = require("root-require")("./src/require-local.js");
+var console_log = requireL("logging").logger("console");
 
 var connect = require('connect')
 var http = require('http');
@@ -36,7 +37,7 @@ bus.on("applicationStarted", function setupServer() {
 
 	bus.triggerConnectServerStarted(server);
 
-	console.info("Started listening at port 3000");
+	console_log("Started listening at port 3000");
 });
 
 bus.on("tasksUpdated", function(task) {
@@ -51,7 +52,7 @@ bus.on("requestStopConnectServer", function() {
 		server.destroy(function() {
 			// We don't know an exit code, but rely on the fact
 			// that somebody does:)
-			console.info("Stopping...");
+			console_log("Stopping...");
 			bus.triggerRequestStopApplication({value: undefined});
 		});
 	}, 1000);

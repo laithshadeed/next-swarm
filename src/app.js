@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
-var requireL = require(__dirname+"/require-local.js");
+var requireL = require("root-require")("./src/require-local.js");
+var console_log = requireL("logging").logger("console");
 
 var bus = require("hermes-bus");
 
 requireL(
+	"logging",
+	"logging-vt100",
 	"commandline-arguments",
 	"tasks",
 	"tasks-status-stdout",
@@ -14,7 +17,7 @@ requireL(
 
 bus.on("requestStopApplication", function(exitCodeReference) {
 	var exitCode = exitCodeReference.value || 0;
-	console.info("Stopped.");
+	console_log("Stopped.");
 	process.exit(exitCode);
 });
 

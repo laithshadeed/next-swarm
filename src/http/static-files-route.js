@@ -1,3 +1,6 @@
+var requireL = require("root-require")("./src/require-local.js");
+var console_log = requireL("logging").logger("console");
+
 var bus = require("hermes-bus");
 
 var _ = require('underscore-node');
@@ -52,7 +55,7 @@ bus.on("registerConnectModules", function(connectApp) {
 
 	// Serve up public folder files
 	if(args.cached) {
-		console.info("Serving cached resources from "+serverRoot);
+		console_log("Serving cached resources from "+serverRoot);
 		serveCachedStatic({}, function (err, middleware) {
 			if (err) {
 				throw err;
@@ -60,7 +63,7 @@ bus.on("registerConnectModules", function(connectApp) {
 			registerStaticFilesModule(middleware)
 		});
 	} else {
-		console.info("Serving non-cached resources from "+serverRoot);
+		console_log("Serving non-cached resources from "+serverRoot);
 		registerStaticFilesModule(serveNonCachedStatic(serverRoot));
 	}
 });

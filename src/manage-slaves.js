@@ -1,4 +1,6 @@
 var requireL = require("root-require")("./src/require-local.js");
+var console_log = requireL("logging").logger("console");
+
 var _ = require('underscore-node');
 var serverIpAddress = "";
 
@@ -50,12 +52,12 @@ var isMonitoringSlaves = false;
 var startMonitoringSlaves = function() {
 	isMonitoringSlaves = true;
 	setInterval(function() {
-//		console.log("Checking slaves:", monitoredSlaves);
+//		console_log("Checking slaves:", monitoredSlaves);
 		var now = Date.now();
 		monitoredSlaves.forEach(function(slave) {
 
 			if((now - slave.timeOfLastHeartBeat) > SLAVE_MAX_TIMEOUT) {
-				console.log("slave " + slave.workerId + " seems lost, restarting");
+				console_log("slave " + slave.workerId + " seems lost, restarting");
 				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);
 
@@ -66,7 +68,7 @@ var startMonitoringSlaves = function() {
 				} else if(task){
 					task.status = FAILED;
 					task.completed = true;
-					console.log("Task: "+ task.name +" reached max numOfRecoveryRuns!");
+					console_log("Task: "+ task.name +" reached max numOfRecoveryRuns!");
 				}
 			}
 		});
@@ -96,7 +98,7 @@ bus.on("taskUpdated", function(task) {
 });
 
 bus.on("heartbeatReceived", function(workerId) {
-//	console.log("heartbeatReceived", workerId);
+	console_log("Heartbeat received from", workerId);
 
 	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
 	if(monitoredSlave) {
@@ -105,20 +107,20 @@ bus.on("heartbeatReceived", function(workerId) {
 });
 
 function restartSlave(workerId) {
-	console.log("Restarting slave ", workerId);
+	console_log("Restarting slave", workerId);
 
 	removeSlave(workerId);
 	var command = "docker stop --time=3 " + workerId;
 	exec(command, function (error) {
 		if (error) {
-			console.log("FAILED to kill container ", workerId, error);
+			console_log("FAILED to kill container", workerId, error);
 		}
 	});
 	//For some reason this fails to start the docker container ????
 	startSlave(serverIpAddress);
 }
 
- function removeSlave(workerId) {
+function removeSlave(workerId) {
 	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
 	if(monitoredSlave) {
 		monitoredSlaves = _.without(monitoredSlaves, monitoredSlave);
@@ -134,11 +136,11 @@ function startSlaves(serverAddress) {
 
 var SIGTERM = 137;
 function startSlave(serverAddress){
-	console.log("Booting-up a docker container...");
+	console_log("Booting-up a docker container...");
 	var command = "docker run next-swarm-slave " + serverAddress;
 	exec(command, function(error){
 		if(error && error.code !== SIGTERM){
-			return console.log("Failed to boot-up a slave", error);
+			return console_log("Failed to boot-up a slave", error);
 		}
 	});
 }
@@ -153,8 +155,8 @@ bus.on("applicationStarted", function() {
 	if(firstNonLocalNetworkConfig) {
 		localIpAddress = firstNonLocalNetworkConfig.address;
 	} else {
-		console.error("Error: Unable to determine public ip address of this host!");
-		console.error("Exiting...");
+		console_log("Error: Unable to determine public ip address of this host!");
+		console_log( "Exiting...");
 		bus.triggerRequestStopApplication({value: 1});
 	}
 });

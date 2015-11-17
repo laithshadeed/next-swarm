@@ -99,11 +99,6 @@ bus.on("taskUpdated", function(task) {
 
 bus.on("heartbeatReceived", function(workerId) {
 	console_log("Heartbeat received from", workerId);
-
-	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
-	if(monitoredSlave) {
-		monitoredSlaves = _.without(monitoredSlaves, monitoredSlave);
-	}
 });
 
 function restartSlave(workerId) {

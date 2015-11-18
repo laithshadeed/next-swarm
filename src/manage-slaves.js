@@ -101,6 +101,11 @@ bus.on("taskUpdated", function(task) {
 
 bus.on("heartbeatReceived", function(workerId) {
 	console_log("Heartbeat received from", workerId);
+
+	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
+	if(monitoredSlave) {
+		monitoredSlave.timeOfLastHeartBeat = Date.now();
+	}
 });
 
 function restartSlave(workerId) {

@@ -52,7 +52,7 @@ var isMonitoringSlaves = false;
 var startMonitoringSlaves = function() {
 	isMonitoringSlaves = true;
 	setInterval(function() {
-//		console_log("Checking slaves:", monitoredSlaves);
+//		console_log("Checking slaves:", JSON.stringify(monitoredSlaves, null, 4));
 		var now = Date.now();
 		monitoredSlaves.forEach(function(slave) {
 
@@ -80,21 +80,13 @@ var startMonitoringSlaves = function() {
 bus.on("taskUpdated", function(task) {
 	if(task.workerId !== "<unknown>") {
 		if(task.completed) {
-			removeSlave(task.workerId);
+			unmonitorSlave(task.workerId);
 		} else if(task.status === PICKED_UP) {
 			if(task.numRecoveryRunsLeft == undefined) {
 				task.defineProperty("numRecoveryRunsLeft", 3);
 			}
 
-			monitoredSlaves.push({
-				workerId: task.workerId,
-				timeOfLastHeartBeat: Date.now(),
-				taskName: task.name,
-			});
-
-			if(!isMonitoringSlaves) {
-				startMonitoringSlaves();
-			}
+			monitorSlave(task);
 		}
 	}
 });
@@ -102,7 +94,7 @@ bus.on("taskUpdated", function(task) {
 bus.on("heartbeatReceived", function(workerId) {
 	console_log("Heartbeat received from", workerId);
 
-	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
+	var monitoredSlave = findSlave(workerId);
 	if(monitoredSlave) {
 		monitoredSlave.timeOfLastHeartBeat = Date.now();
 	}
@@ -111,7 +103,7 @@ bus.on("heartbeatReceived", function(workerId) {
 function restartSlave(workerId) {
 	console_log("Restarting slave", workerId);
 
-	removeSlave(workerId);
+	unmonitorSlave(workerId);
 	var command = "docker stop --time=3 " + workerId;
 	exec(command, function (error) {
 		if (error) {
@@ -122,8 +114,27 @@ function restartSlave(workerId) {
 	startSlave(serverIpAddress);
 }
 
-function removeSlave(workerId) {
-	var monitoredSlave = monitoredSlaves.find((slave) => slave.workerId === workerId);
+function findSlave(workerId) {
+	return monitoredSlaves.find((slave) => slave.workerId === workerId);
+}
+
+function monitorSlave(taskThatSlaveIsRunning) {
+	var monitoredSlave = findSlave(taskThatSlaveIsRunning.workerId);
+	if(!monitoredSlave) {
+		monitoredSlaves.push({
+			workerId: taskThatSlaveIsRunning.workerId,
+			timeOfLastHeartBeat: Date.now(),
+			taskName: taskThatSlaveIsRunning.name,
+		});
+
+		if(!isMonitoringSlaves) {
+			startMonitoringSlaves();
+		}
+	}
+}
+
+function unmonitorSlave(workerId) {
+	var monitoredSlave = findSlave(workerId);
 	if(monitoredSlave) {
 		monitoredSlaves = _.without(monitoredSlaves, monitoredSlave);
 	}

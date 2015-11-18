@@ -1,16 +1,60 @@
 <!DOCTYPE html>
 <html>
-	<head></head>
+	<head>
+		<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+		<style>
+		</style>
+	</head>
 	<body>
-		Open the console
+		<pre id="dashboard">Waiting...</pre>
+		<hr/>
+		<pre id="console">Waiting...</pre>
 		<script>
+			var bus = $('body');
+
+			var contains = function(array, element) {
+				return $.inArray(element, array) >= 0;
+			}
+
+			var logAreas = {
+				dashboard: [],
+				console: [],
+			};
+			var supportedLogAreaNames = Object.keys(logAreas);
+
+			bus.on("logMessage", function(e, loggerId, message){
+				if(contains(supportedLogAreaNames, loggerId)) {
+					logAreas[loggerId].push.apply(logAreas[loggerId], message.split(/\n/));
+
+					$('#dashboard').text(logAreas.dashboard.join("\n"));
+					$('#console').text(logAreas.console.slice(-10).join("\n"));
+				}
+			});
+
+			bus.on("logReset", function(e, loggerId){
+				if(contains(supportedLogAreaNames, loggerId)) {
+					logAreas[loggerId] = [];
+				}
+			});
+
+
 			ws = new WebSocket('ws://'+location.hostname+':3001');
 			ws.onopen = function() {
 				ws.send('something sent by client');
 			};
 			ws.onmessage = function(event) {
-				var message = event.data;
-				console.log('received: %s', message);
+				var busMessage;
+
+				try {
+					busMessage = JSON.parse(event.data);
+				} catch(e) {
+					console.log('Received corrupted busMessage: ', event.data);
+				}
+
+				if(busMessage) {
+					console.log('received: ', event.data, "(", busMessage, ")");
+					bus.triggerHandler.apply(bus, [busMessage.busMessageId].concat([busMessage.arguments]));
+				}
 			};
 		</script>
 	</body>

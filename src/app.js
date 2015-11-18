@@ -19,7 +19,12 @@ requireL(
 bus.on("requestStopApplication", function(exitCodeReference) {
 	var exitCode = exitCodeReference.value || 0;
 	console_log("Stopped.");
-	process.exit(exitCode);
+
+	// Give all modules a chance to receive the last
+	// logs before terminating the application.
+	setTimeout(function() {
+		process.exit(exitCode);
+	}, 2000);
 });
 
 bus.triggerApplicationStarting();

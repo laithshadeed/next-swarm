@@ -26,7 +26,8 @@ bus.on("logReset", function(loggerId){
 // Adds a link to the web client reporting page
 bus.on("logReset", function(loggerId){
 	if(loggerId === "dashboard" && localConnectServerUri) {
-		bus.triggerLogMessage("dashboard", "\033[H" + sprintf("%"+process.stdout.columns+"s", "Interactive log also available at: "+localConnectServerUri+"/report-task-status/"));
+		var outputTerminalWidth = (process.stdout.columns || 112);
+		bus.triggerLogMessage("dashboard", "\033[H" + sprintf("%"+outputTerminalWidth+"s", "Interactive log also available at: "+localConnectServerUri+"/report-task-status/"));
 	}
 });
 

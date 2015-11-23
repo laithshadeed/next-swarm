@@ -39,8 +39,10 @@ bus.on("scheduleTasks", function(tasks) {
 bus.on("requestStopApplication", function() {
 	var failedTaskNames = tasks.filter((task) => task.status === FAILED).map((task) => task.name);
 
-	console_log("\nThe following tasks completed with one or more failed tests:\n\n" + failedTaskNames.map((name) => "  "+name));
-	console_log("");
+	if(failedTaskNames.length) {
+		console_log("\nThe following tasks completed with one or more failed tests:\n\n" + failedTaskNames.map((name) => "  "+name));
+		console_log("");
+	}
 });
 
 } // with tasks.statusTypes

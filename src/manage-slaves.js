@@ -12,6 +12,7 @@ var exec = require('child_process').exec;
 var bus = require("hermes-bus");
 
 var numSlaves = 1;
+var dockerSlaveImageId = 'next-swarm-slave';
 bus.on("registerCommandlineArguments", function (parser) {
 	parser.addArgument(
 		['-s', '--slaves'],
@@ -21,10 +22,19 @@ bus.on("registerCommandlineArguments", function (parser) {
 			help: 'Specify a how many slaves to start.'
 		}
 	);
+	parser.addArgument(
+		['--docker-slave-image-id'],
+		{
+			dest: 'dockerSlaveImageId',
+			metavar: 'ID',
+			help: 'The slave image id that docker uses to run a slave (default: \'next-swarm-slave\').'
+		}
+	);
 });
 
 bus.on("commandlineArgumentsParsed", function (args) {
 	numSlaves = args.numSlaves || numSlaves;
+	dockerSlaveImageId = args.dockerSlaveImageId || dockerSlaveImageId;
 });
 
 with(requireL("tasks").statusTypes) {
@@ -150,7 +160,7 @@ function startSlaves(serverAddress) {
 var SIGTERM = 137;
 function startSlave(serverAddress){
 	console_log("Booting-up a docker container...");
-	var command = "docker run next-swarm-slave " + serverAddress;
+	var command = "docker run " + dockerSlaveImageId + " " + serverAddress;
 	exec(command, function(error){
 		if(error && error.code !== SIGTERM){
 			return console_log("Failed to boot-up a slave", error);

@@ -163,7 +163,7 @@ function startSlave(serverAddress){
 	var command = "docker run " + dockerSlaveImageId + " " + serverAddress;
 	exec(command, function(error){
 		if(error && error.code !== SIGTERM){
-			console_log("Failed to boot-up a slave", error);
+			console_log("Failed to boot-up a slave:", error);
 			bus.triggerRequestStopApplication({value: 1});
 		}
 	});

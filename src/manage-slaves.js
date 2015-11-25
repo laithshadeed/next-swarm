@@ -10,6 +10,7 @@ Array.prototype.flatten = function() {return _.flatten(this)};
 var os = require('os');
 var exec = require('child_process').exec;
 var bus = require("hermes-bus");
+var MAX_STDOUT_BUFFER = {maxBuffer: 500 * 1024};
 
 var numSlaves = 1;
 var dockerSlaveImageId = 'next-swarm-slave';
@@ -115,7 +116,7 @@ function restartSlave(workerId) {
 
 	unmonitorSlave(workerId);
 	var command = "docker stop --time=3 " + workerId;
-	exec(command, function (error) {
+	exec(command, MAX_STDOUT_BUFFER, function (error) {
 		if (error) {
 			console_log("FAILED to kill container", workerId, error);
 		}
@@ -161,7 +162,7 @@ var SIGTERM = 137;
 function startSlave(serverAddress){
 	console_log("Booting-up a docker container...");
 	var command = "docker run " + dockerSlaveImageId + " " + serverAddress;
-	exec(command, function(error){
+	exec(command, MAX_STDOUT_BUFFER, function(error){
 		if(error && error.code !== SIGTERM){
 			console_log("Failed to boot-up a slave:", error);
 			bus.triggerRequestStopApplication({value: 1});

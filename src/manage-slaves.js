@@ -14,6 +14,7 @@ var MAX_STDOUT_BUFFER = {maxBuffer: 500 * 1024};
 
 var numSlaves = 1;
 var dockerSlaveImageId = 'next-swarm-slave';
+var dockerSlaveTimeout = 30;
 bus.on("registerCommandlineArguments", function (parser) {
 	parser.addArgument(
 		['-s', '--slaves'],
@@ -31,11 +32,20 @@ bus.on("registerCommandlineArguments", function (parser) {
 			help: 'The slave image id that docker uses to run a slave (default: \'next-swarm-slave\').'
 		}
 	);
+	parser.addArgument(
+		['--docker-slave-timeout'],
+		{
+			dest: 'dockerSlaveTimeout',
+			metavar: 'SEC',
+			help: 'The allowed maximum number of seconds between two consecutive heartbeats before next-swarm considers the slave lost.'
+		}
+	);
 });
 
 bus.on("commandlineArgumentsParsed", function (args) {
 	numSlaves = args.numSlaves || numSlaves;
 	dockerSlaveImageId = args.dockerSlaveImageId || dockerSlaveImageId;
+	dockerSlaveTimeout = args.dockerSlaveTimeout !== undefined ? args.dockerSlaveTimeout : dockerSlaveTimeout;
 });
 
 with(requireL("tasks").statusTypes) {
@@ -47,7 +57,7 @@ bus.on("scheduleTasks", function(tasks2) {
 });
 
 // maximum time since last heartbeat before we consider the slave lost
-var SLAVE_MAX_TIMEOUT=30*1000;
+var SLAVE_MAX_TIMEOUT=dockerSlaveTimeout*1000;
 // interval at which we check if a slave was lost
 var SLAVE_SANITY_CHECK_INTERVAL= 1000;
 // slave looks like: {workerId: "docker container id", timeOfLastHeartBeat: 1447284644252, taskName: "name of task it was running"}

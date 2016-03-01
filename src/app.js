@@ -12,6 +12,7 @@ requireL(
 	"commandline-arguments",
 	"tasks",
 	"tasks-status-reporting",
+	"tasks-status-save-final-report",
 	"manage-slaves",
 	"http/http"
 );

@@ -58,7 +58,13 @@ var wss = new WebSocketServer({port: 3001});
 
 wss.on('connection', function(ws) {
 	var send = function(busMessageId, args) {
-		ws.send(JSON.stringify({busMessageId: busMessageId, arguments: args}));
+		try {
+			ws.send(JSON.stringify({busMessageId: busMessageId, arguments: args}));
+		} catch(error) {
+			console.error(error);
+			// Workaround for unsubscribe:
+			send = function() {};
+		}
 	};
 
 	["logMessage", "logReset"].forEach(function(busMessageId) {

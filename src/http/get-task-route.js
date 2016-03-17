@@ -1,3 +1,4 @@
+var _ = require('underscore-node');
 var requireL = require("root-require")("./src/require-local.js");
 var query = require("connect-query");
 
@@ -33,7 +34,7 @@ bus.on("scheduleTasks", function(tasks2) {
 bus.on("registerConnectModules", function(connectApp) {
 	connectApp.use('/get-task', query());
 	connectApp.use('/get-task', function(request, response, next) {
-		var task = tasks.find((task) => task.status === SCHEDULED);
+		var task = _.shuffle(tasks).find((task) => task.status === SCHEDULED);
 
 		if(task) {
 			task.status = PICKED_UP;

@@ -15,6 +15,7 @@ var MAX_STDOUT_BUFFER = {maxBuffer: 500 * 1024};
 var numSlaves = 1;
 var dockerSlaveImageId = 'next-swarm-slave';
 var dockerSlaveTimeout = 30;
+var dockerSlaveOptions = "";
 bus.on("registerCommandlineArguments", function (parser) {
 	parser.addArgument(
 		['-s', '--slaves'],
@@ -40,12 +41,21 @@ bus.on("registerCommandlineArguments", function (parser) {
 			help: 'The allowed maximum number of seconds between two consecutive heartbeats before next-swarm considers the slave lost.'
 		}
 	);
+	parser.addArgument(
+		['--docker-slave-options'],
+		{
+			dest: 'dockerSlaveOptions',
+			metavar: 'OPTIONS',
+			help: 'Additional options passed to docker when starting slaves.'
+		}
+	);
 });
 
 bus.on("commandlineArgumentsParsed", function (args) {
 	numSlaves = args.numSlaves || numSlaves;
 	dockerSlaveImageId = args.dockerSlaveImageId || dockerSlaveImageId;
 	dockerSlaveTimeout = args.dockerSlaveTimeout !== undefined ? args.dockerSlaveTimeout : dockerSlaveTimeout;
+	dockerSlaveOptions = args.dockerSlaveOptions !== undefined ? args.dockerSlaveOptions : dockerSlaveOptions;
 });
 
 with(requireL("tasks").statusTypes) {
@@ -174,7 +184,7 @@ function startSlaves(serverAddress) {
 var SIGTERM = 137;
 function startSlave(serverAddress){
 	console_log("Booting-up a docker container...");
-	var command = "docker run " + dockerSlaveImageId + " " + serverAddress;
+	var command = "docker run " + dockerSlaveOptions + " " + dockerSlaveImageId + " " + serverAddress;
 	exec(command, MAX_STDOUT_BUFFER, function(error){
 		if(error && error.code !== SIGTERM){
 			console_log("Failed to boot-up a slave:", error);

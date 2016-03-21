@@ -57,7 +57,10 @@ bus.on("scheduleTasks", function(tasks2) {
 });
 
 // maximum time since last heartbeat before we consider the slave lost
-var SLAVE_MAX_TIMEOUT=dockerSlaveTimeout*1000;
+var getSlaveMaxTimeout = function() {
+	return dockerSlaveTimeout*1000;
+}
+
 // interval at which we check if a slave was lost
 var SLAVE_SANITY_CHECK_INTERVAL= 1000;
 // slave looks like: {workerId: "docker container id", timeOfLastHeartBeat: 1447284644252, taskName: "name of task it was running"}
@@ -77,7 +80,7 @@ var startMonitoringSlaves = function() {
 		var now = Date.now();
 		monitoredSlaves.forEach(function(slave) {
 
-			if((now - slave.timeOfLastHeartBeat) > SLAVE_MAX_TIMEOUT) {
+			if((now - slave.timeOfLastHeartBeat) > getSlaveMaxTimeout()) {
 				console_log("slave " + slave.workerId + " seems lost, restarting");
 				restartSlave(slave.workerId);
 				var task = tasks.find((task) => task.name === slave.taskName);

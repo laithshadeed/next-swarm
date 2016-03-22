@@ -54,8 +54,10 @@ bus.on("registerCommandlineArguments", function (parser) {
 bus.on("commandlineArgumentsParsed", function (args) {
 	numSlaves = args.numSlaves || numSlaves;
 	dockerSlaveImageId = args.dockerSlaveImageId || dockerSlaveImageId;
-	dockerSlaveTimeout = args.dockerSlaveTimeout !== undefined ? args.dockerSlaveTimeout : dockerSlaveTimeout;
-	dockerSlaveOptions = args.dockerSlaveOptions !== undefined ? args.dockerSlaveOptions : dockerSlaveOptions;
+
+	# Explicit loose equality check
+	dockerSlaveTimeout = args.dockerSlaveTimeout != undefined ? args.dockerSlaveTimeout : dockerSlaveTimeout;
+	dockerSlaveOptions = args.dockerSlaveOptions != undefined ? args.dockerSlaveOptions : dockerSlaveOptions;
 });
 
 with(requireL("tasks").statusTypes) {

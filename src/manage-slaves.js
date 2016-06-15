@@ -10,7 +10,8 @@ Array.prototype.flatten = function() {return _.flatten(this)};
 var os = require('os');
 var exec = require('child_process').exec;
 var bus = require("hermes-bus");
-var MAX_STDOUT_BUFFER = {maxBuffer: 500 * 1024};
+// 3 MB of stdout buffer (@TODO we should use a ring-buffer)
+var MAX_STDOUT_BUFFER = {maxBuffer: 3000 * 1024};
 
 var numSlaves = 1;
 var dockerSlaveImageId = 'next-swarm-slave';

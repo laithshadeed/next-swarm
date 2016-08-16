@@ -25,19 +25,38 @@ var server = {
 	destroy: function(){},
 };
 
+var os = require('os');
+var publicIpAddress = "127.0.0.1";
+bus.on("applicationStarted", function determinePublicAddress() {
+	var firstNonLocalNetworkConfig = _.values(os.networkInterfaces()).flatten().find((e) => e.address !== "127.0.0.1" && e.address !== "::1" );
+
+	if(firstNonLocalNetworkConfig) {
+		publicIpAddress = firstNonLocalNetworkConfig.address;
+	} else {
+		console_log("Error: Unable to determine public ip address of this host!");
+		console_log( "Exiting...");
+		bus.triggerRequestStopApplication({value: 1});
+	}
+});
+
 bus.on("applicationStarted", function setupServer() {
 	// Setup connect
 	var app = connect();
 
 	bus.triggerRegisterConnectModules(app);
 
+	var port = 3000;
+	var connectServerUri = "http://"+publicIpAddress+":"+port;
+
 	// Listen
-	server = app.listen(3000);
+	server = app.listen(port);
 	enableDestroy(server);
+
+	server.uri = connectServerUri;
 
 	bus.triggerConnectServerStarted(server);
 
-	console_log("Started listening at port 3000");
+	console_log("Started listening at port " + port);
 });
 
 bus.on("tasksUpdated", function(task) {

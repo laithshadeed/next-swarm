@@ -7,7 +7,6 @@ var serverIpAddress = "";
 // @TODO move to monkeypatch-array module
 Array.prototype.flatten = function() {return _.flatten(this)};
 
-var os = require('os');
 var exec = require('child_process').exec;
 var bus = require("hermes-bus");
 // 3 MB of stdout buffer (@TODO we should use a ring-buffer)
@@ -198,20 +197,6 @@ function startSlave(serverAddress){
 
 } // with tasks.statusTypes
 
-var localIpAddress = "127.0.0.1";
-
-bus.on("applicationStarted", function() {
-	var firstNonLocalNetworkConfig = _.values(os.networkInterfaces()).flatten().find((e) => e.address !== "127.0.0.1" && e.address !== "::1" );
-
-	if(firstNonLocalNetworkConfig) {
-		localIpAddress = firstNonLocalNetworkConfig.address;
-	} else {
-		console_log("Error: Unable to determine public ip address of this host!");
-		console_log( "Exiting...");
-		bus.triggerRequestStopApplication({value: 1});
-	}
-});
-
 bus.on("connectServerStarted", function(connectServer) {
-	startSlaves("http://"+localIpAddress+":"+connectServer.address().port);
+	startSlaves(connectServer.uri);
 });

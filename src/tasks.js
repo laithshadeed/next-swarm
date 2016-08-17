@@ -36,7 +36,7 @@ var triggerTaskUpdated = _.throttle(function(task) {
 
 bus.on("commandlineArgumentsParsed", function (args) {
 	var taskObjects = (args.tasks || []).map(function(taskSpec) {
-		var keyValueTuple = taskSpec.split(/=/);
+		var keyValueTuple = taskSpec.split(/=(.+)?/);
 		return {
 			name: keyValueTuple[0],
 			testFiles:  keyValueTuple[1],

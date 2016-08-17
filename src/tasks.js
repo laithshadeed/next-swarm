@@ -18,7 +18,7 @@ bus.on("registerCommandlineArguments", function (parser) {
 			dest: 'tasks',
 			metavar: 'TASK',
 			help: 'Specify a task to run. A task is specified as \
-					TASKNAME=TESTFILE1,TESTFILE2,...,TESTFILEN. \
+					TASKNAME=URI. \
 					This argument should be repeated for each task.'
 		}
 	);
@@ -39,7 +39,7 @@ bus.on("commandlineArgumentsParsed", function (args) {
 		var keyValueTuple = taskSpec.split(/=(.+)?/);
 		return {
 			name: keyValueTuple[0],
-			testFiles:  keyValueTuple[1],
+			uri:  keyValueTuple[1],
 			workerId:  "<unknown>",
 			status:    statusTypes.SCHEDULED,
 			completed: false,

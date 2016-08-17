@@ -1,6 +1,7 @@
 var requireL = require("root-require")("./src/require-local.js");
 var bodyParser = require('body-parser');
 var bus = require("hermes-bus");
+var cors = require('cors');
 
 with(requireL("tasks").statusTypes) {
 
@@ -11,9 +12,11 @@ bus.on("scheduleTasks", function(tasks2) {
 });
 
 bus.on("registerConnectModules", function(connectApp) {
+	connectApp.use('/submit-report', cors());
 	connectApp.use('/submit-report', bodyParser.json());
 	connectApp.use('/submit-report', function(request, response, next) {
 		var report = request.body;
+		console.log("qetqetqet", tasks.toString(), report, report.name);
 		var task = tasks.find((task) => task.name === report.name);
 		task.completed = true;
 		task.status = (report.fail+report.error) === 0 ? SUCCESS : FAILED;

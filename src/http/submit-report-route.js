@@ -2,6 +2,7 @@ var requireL = require("root-require")("./src/require-local.js");
 var bodyParser = require('body-parser');
 var bus = require("hermes-bus");
 var cors = require('cors');
+var orElse = requireL("utils").orElse;
 
 with(requireL("tasks").statusTypes) {
 
@@ -19,7 +20,9 @@ bus.on("registerConnectModules", function(connectApp) {
 		console.log("qetqetqet", tasks.toString(), report, report.name);
 		var task = tasks.find((task) => task.name === report.name);
 		task.completed = true;
-		task.status = (report.fail+report.error) === 0 ? SUCCESS : FAILED;
+		var numFailed = orElse(report.fail, 0);
+		var numErrors = orElse(report.error, 0);
+		task.status = (numFailed+numErrors) === 0 ? SUCCESS : FAILED;
 		task.report = report;
 
 		response.writeHead(200, {});

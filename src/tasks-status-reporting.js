@@ -5,12 +5,9 @@ var bus = require("hermes-bus");
 var requireL = require("root-require")("./src/require-local.js");
 var console_log = requireL("logging").logger("console");
 var dashboard_log = requireL("logging").logger("dashboard");
+var orElse = requireL("utils").orElse;
 
 with(requireL("tasks").statusTypes) {
-
-function orElse(a, b) {
-	return a != undefined ? a : b;
-}
 
 function reportTasks(tasks) {
 	dashboard_log.reset();

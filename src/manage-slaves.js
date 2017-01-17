@@ -183,12 +183,13 @@ function startSlaves(serverAddress) {
 	});
 }
 
-var SIGTERM = 137;
+var SIGKILL = 137;
+var SIGTERM = 143;
 function startSlave(serverAddress){
 	console_log("Booting-up a docker container...");
 	var command = "docker run " + dockerSlaveOptions + " " + dockerSlaveImageId + " " + serverAddress;
 	exec(command, MAX_STDOUT_BUFFER, function(error){
-		if(error && error.code !== SIGTERM){
+		if(error && !(error.code === SIGKILL || error.code == SIGTERM)) {
 			console_log("Failed to boot-up a slave:", error);
 			bus.triggerRequestStopApplication({value: 1});
 		}

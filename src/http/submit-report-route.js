@@ -17,7 +17,6 @@ bus.on("registerConnectModules", function(connectApp) {
 	connectApp.use('/submit-report', bodyParser.json());
 	connectApp.use('/submit-report', function(request, response, next) {
 		var report = request.body;
-		console.log("qetqetqet", tasks.toString(), report, report.name);
 		var task = tasks.find((task) => task.name === report.name);
 		task.completed = true;
 		var numFailed = orElse(report.fail, 0);

@@ -88,11 +88,20 @@ bus.on("applicationStarted", function() {
 });
 
 bus.on("requestStopApplication", function(exitCodeReference) {
-	const exitCode = tasks.every((task) => task.status === statusTypes.SUCCESS)
-		? COMPLETED_WITHOUT_FAILING_TESTS
-		: COMPLETED_WITH_FAILING_TESTS
-	;
-	exitCodeReference.value = exitCode;
+	const allTasksCompleted = tasks.every((task) => task.completed);
+	let exitCode = undefined;
+
+	if(allTasksCompleted) {
+		const allTasksSuccess = tasks.every((task) => task.status === statusTypes.SUCCESS);
+		exitCode = allTasksSuccess
+			? COMPLETED_WITHOUT_FAILING_TESTS
+			: COMPLETED_WITH_FAILING_TESTS
+			;
+	}
+
+	if(exitCode !== undefined) {
+		exitCodeReference.value = exitCode;
+	}
 });
 
 module.exports = {

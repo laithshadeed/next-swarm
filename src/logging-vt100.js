@@ -47,3 +47,8 @@ bus.on("logReset", function(loggerId){
 		logAreas[loggerId] = [];
 	}
 });
+
+bus.on("requestStopApplication", function() {
+	// Upon application stop, immediately flush the log buffer
+	logToVT100();
+});

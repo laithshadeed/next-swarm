@@ -2,6 +2,9 @@ var _ = require('underscore-node');
 
 var bus = require("hermes-bus");
 
+var requireL = require("root-require")("./src/require-local.js");
+var orElse = requireL("utils").orElse;
+
 const {
 	COMPLETED_WITHOUT_FAILING_TESTS,
 	COMPLETED_WITH_FAILING_TESTS,
@@ -34,10 +37,10 @@ bus.on("taskUpdated", function(){});
 bus.on("tasksUpdated", function(){});
 
 var triggerTasksUpdated = _.throttle((tasks) => bus.triggerTasksUpdated(tasks), 100);
-var triggerTaskUpdated = _.throttle(function(task) {
-	bus.triggerTaskUpdated(task);
+var triggerTaskUpdated = function(task, propertyName) {
+	bus.triggerTaskUpdated(task, propertyName);
 	triggerTasksUpdated(tasks);
-}, 100);
+};
 
 bus.on("commandlineArgumentsParsed", function (args) {
 	var taskObjects = (args.tasks || []).map(function(taskSpec) {
@@ -61,17 +64,13 @@ bus.on("commandlineArgumentsParsed", function (args) {
 			defineProperty: function(propertyName, defaultValue) {
 				Object.defineProperty(accessor,	propertyName, {
 					get: function() {
-						return task[propertyName];
+						return orElse(task[propertyName], defaultValue);
 					},
 					set: function(value) {
 						task[propertyName] = value;
-						triggerTaskUpdated(accessor);
+						triggerTaskUpdated(accessor, propertyName);
 					},
 				});
-
-				if(defaultValue != undefined) {
-					this[propertyName] = defaultValue;
-				}
 			}
 		};
 		Object.keys(task).forEach((key) => accessor.defineProperty(key));

@@ -2,6 +2,11 @@ var _ = require('underscore-node');
 
 var bus = require("hermes-bus");
 
+const {
+	COMPLETED_WITHOUT_FAILING_TESTS,
+	COMPLETED_WITH_FAILING_TESTS,
+} = requireL("exitcodes");
+
 var statusTypes = {
 	SCHEDULED: "Scheduled...",
 	PICKED_UP: "Picked up.",
@@ -84,7 +89,10 @@ bus.on("applicationStarted", function() {
 });
 
 bus.on("requestStopApplication", function(exitCodeReference) {
-	var exitCode = tasks.every((task) => task.status === statusTypes.SUCCESS) ? 0 : 1;
+	const exitCode = tasks.every((task) => task.status === statusTypes.SUCCESS)
+		? COMPLETED_WITHOUT_FAILING_TESTS
+		: COMPLETED_WITH_FAILING_TESTS
+	;
 	exitCodeReference.value = exitCode;
 });
 

@@ -5,6 +5,8 @@ var console_log = requireL("logging").logger("console");
 
 var bus = require("hermes-bus");
 
+const {APPLICATION_STOPPED_WITH_NO_ERRORS} = requireL("exitcodes");
+
 requireL(
 	"logging",
 	"logging-vt100",
@@ -18,7 +20,7 @@ requireL(
 );
 
 bus.on("requestStopApplication", function(exitCodeReference) {
-	var exitCode = exitCodeReference.value || 0;
+	var exitCode = exitCodeReference.value || APPLICATION_STOPPED_WITH_NO_ERRORS;
 	console_log("Stopped.");
 
 	// Give all modules a chance to receive the last

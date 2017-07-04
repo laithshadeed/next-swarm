@@ -10,6 +10,8 @@ var enableDestroy = require('server-destroy');
 
 var bus = require("hermes-bus");
 
+const {ERROR_DURING_APPLICATION_START} = requireL("exitcodes");
+
 requireL(
 	"http/get-task-route",
 	"http/submit-report-route",
@@ -35,7 +37,7 @@ bus.on("applicationStarted", function determinePublicAddress() {
 	} else {
 		console_log("Error: Unable to determine public ip address of this host!");
 		console_log( "Exiting...");
-		bus.triggerRequestStopApplication({value: 1});
+		bus.triggerRequestStopApplication({value: ERROR_DURING_APPLICATION_START});
 	}
 });
 

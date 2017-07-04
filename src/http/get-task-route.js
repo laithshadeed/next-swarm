@@ -32,10 +32,11 @@ bus.on("commandlineArgumentsParsed", function (args) {
 with(requireL("tasks").statusTypes) {
 
 var tasks = [];
-
-bus.on("scheduleTasks", function(tasks2) {
-	tasks = tasks2;
-});
+function updateTasks(tasks_) {
+	tasks = tasks_;
+}
+bus.on("tasksUpdated", updateTasks);
+bus.on("scheduleTasks", updateTasks);
 
 const die = (message) => {
 	console_log(message);
@@ -60,7 +61,7 @@ const constructTaskUri = (task) => {
 bus.on("registerConnectModules", function(connectApp) {
 	connectApp.use('/get-task', query());
 	connectApp.use('/get-task', function(request, response, next) {
-		var task = _.shuffle(tasks).find((task) => task.status === SCHEDULED);
+		var task = tasks.find((task) => task.status === SCHEDULED);
 
 		if(!connectServerUri) {
 			die("Error: connectServerUri (swarmURL) is not yet known!");

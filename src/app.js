@@ -13,6 +13,7 @@ requireL(
 	"logging-websockets",
 	"commandline-arguments",
 	"tasks",
+	"tasks-smart-order",
 	"tasks-status-reporting",
 	"tasks-status-save-final-report",
 	"manage-slaves",

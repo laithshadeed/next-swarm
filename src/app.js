@@ -10,7 +10,7 @@ const {APPLICATION_STOPPED_WITH_NO_ERRORS} = requireL("exitcodes");
 requireL(
 	"logging",
 	"logging-vt100",
-	"logging-websockets",
+	//"logging-websockets",
 	"commandline-arguments",
 	"tasks",
 	"tasks-smart-order",

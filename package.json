@@ -28,6 +28,6 @@
     "server-destroy": "^1.0.1",
     "sprintf-js": "^1.0.3",
     "underscore-node": "^0.1.2",
-    "ws": "^0.8.0"
+    "ws": "^7.0.0"
   }
 }

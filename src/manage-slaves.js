@@ -187,7 +187,7 @@ var SIGKILL = 137;
 var SIGTERM = 143;
 function startSlave(serverAddress){
 	console_log("Booting-up a docker container...");
-	var command = "docker run " + dockerSlaveOptions + " " + dockerSlaveImageId + " " + serverAddress;
+	var command = "docker run --rm " + dockerSlaveOptions + " " + dockerSlaveImageId + " " + serverAddress;
 	exec(command, MAX_STDOUT_BUFFER, function(error){
 		if(error && !(error.code === SIGKILL || error.code == SIGTERM)) {
 			console_log("Failed to boot-up a slave:", error);

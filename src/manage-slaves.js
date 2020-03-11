@@ -15,6 +15,7 @@ var MAX_STDOUT_BUFFER = {maxBuffer: 3000 * 1024};
 var numSlaves = 1;
 var dockerSlaveImageId = 'next-swarm-slave';
 var dockerSlaveTimeout = 30;
+var dockerSlaveNamePrefix='next-swarm-slave';
 var dockerSlaveOptions = "";
 bus.on("registerCommandlineArguments", function (parser) {
 	parser.addArgument(
@@ -41,6 +42,14 @@ bus.on("registerCommandlineArguments", function (parser) {
 			help: 'The allowed maximum number of seconds between two consecutive heartbeats before next-swarm considers the slave lost.'
 		}
 	);
+  parser.addArgument(
+		['--docker-slave-name-prefix'],
+		{
+			dest: 'dockerSlaveNamePrefix',
+			metavar: 'NAME_PREFIX',
+			help: 'Container name prefix to be used to generate container names'
+		}
+	);
 	parser.addArgument(
 		['--docker-slave-options'],
 		{
@@ -54,6 +63,7 @@ bus.on("registerCommandlineArguments", function (parser) {
 bus.on("commandlineArgumentsParsed", function (args) {
 	numSlaves = args.numSlaves || numSlaves;
 	dockerSlaveImageId = args.dockerSlaveImageId || dockerSlaveImageId;
+  dockerSlaveNamePrefix = args.dockerSlaveNamePrefix || dockerSlaveNamePrefix;
 
 	// Explicit loose equality check
 	dockerSlaveTimeout = args.dockerSlaveTimeout != undefined ? args.dockerSlaveTimeout : dockerSlaveTimeout;
@@ -178,16 +188,16 @@ function unmonitorSlave(workerId) {
 
 function startSlaves(serverAddress) {
 	serverIpAddress = serverAddress;
-	_.range(numSlaves).forEach(function() {
-		startSlave(serverAddress);
+	_.range(numSlaves).forEach(function(slaveNumber) {
+		startSlave(slaveNumber, serverAddress);
 	});
 }
 
 var SIGKILL = 137;
 var SIGTERM = 143;
-function startSlave(serverAddress){
+function startSlave(slaveNumber, serverAddress){
 	console_log("Booting-up a docker container...");
-	var command = "docker run --rm " + dockerSlaveOptions + " " + dockerSlaveImageId + " " + serverAddress;
+	var command = `docker run --rm --name ${dockerSlaveNamePrefix}-${slaveNumber} ${dockerSlaveOptions} ${dockerSlaveImageId} ${serverAddress}`;
 	exec(command, MAX_STDOUT_BUFFER, function(error){
 		if(error && !(error.code === SIGKILL || error.code == SIGTERM)) {
 			console_log("Failed to boot-up a slave:", error);

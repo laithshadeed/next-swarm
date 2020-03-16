@@ -157,7 +157,7 @@ function restartSlave(workerId) {
 		}
 	});
 	//For some reason this fails to start the docker container ????
-	startSlave(serverIpAddress);
+	startSlave(Math.floor((Math.random() + 1) * 10000), serverIpAddress);
 }
 
 function findSlave(workerId) {
